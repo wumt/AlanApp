@@ -4,12 +4,34 @@ spring:
         password: 123456
         url: jdbc:mysql://10.221.149.83:8380/database?useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=true
         username: root
+
     thymeleaf:
-        mode: HTML5
+        prefix: classpath:/templates/
+        suffix: .html
+        mode: HTML
+        cache: false
+        enabled: true
+        encoding: UTF-8
+        servlet:
+            content-type: text/html
     mvc:
-        view:
-             prefix: /page/
-             suffix: .html
+      static-path-pattern: /**
+  # 热部署
+    devtools:
+      restart:
+        enabled: true
+        additional-exclude: WEB-INF/**
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
+      password:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+      timeout: 0
 mybatis-plus:
   # 如果是放在src/main/java目录下 classpath:/com/yourpackage/*/mapper/*Mapper.xml
   # 如果是放在resource目录 classpath:/mapper/*Mapper.xml
@@ -43,3 +65,5 @@ mybatis-plus:
 server:
   servlet:
     context-path: /alan
+  port: 8080
+
