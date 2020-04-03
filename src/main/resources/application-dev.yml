@@ -3,10 +3,10 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     # MYSQL 5 驱动：com.mysql.jdbc.Driver，MYSQL 6+ 驱动：com.mysql.cj.jdbc.Driver
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://10.221.149.83:8380/database?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://106.12.60.227:3307/database?autoReconnect=true&useUnicode=true&characterEncoding=utf8&useSSL=false
     username: root
-    password: 123456
+    password: 
     # 连接池配置
     druid:
       # 初始化大小，最小，最大
@@ -52,7 +52,12 @@ spring:
         encoding: UTF-8
         servlet:
             content-type: text/html
+    resources: # 指定静态资源的路径
+      static-locations: classpath:/static/,classpath:/views/
     mvc:
+      view:
+        prefix: /WEB-INF/
+        suffix: .jsp
       static-path-pattern: /**
   # 热部署
     devtools:
@@ -70,6 +75,9 @@ spring:
         max-idle: 8
         min-idle: 0
       timeout: 0
+  output:
+    ansi:
+      enabled: ALWAYS
 mybatis-plus:
   # 如果是放在src/main/java目录下 classpath:/com/yourpackage/*/mapper/*Mapper.xml
   # 如果是放在resource目录 classpath:/mapper/*Mapper.xml
@@ -91,9 +99,11 @@ mybatis-plus:
       sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
 
   configuration:
-    #配置返回数据库(column下划线命名&&返回java实体是驼峰命名)，自动匹配无需as（没开启这个，SQL需要写as： select user_id as userId）
     map-underscore-to-camel-case: true
-    cache-enabled: false
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
     #配置JdbcTypeForNull, oracle数据库必须配置
     jdbc-type-for-null: 'null'
 server:
@@ -104,8 +114,5 @@ server:
 logging:
   level: # 配置级别 分包配置级别，即不同的目录下可以使用不同的级别
     com.alan.app: DEBUG
-    org.springfromework.web: INFO
-    org.hibernate: ERROR
-    # 在不指定路径，只指定输出日志的文件名，默认输出至当前项目下 若指定，则会输出至指定目录下
-  file: logs/springboot.log
-  max-size: 100MB
+    org.springfromework.web: DEBUG
+    org.hibernate: DEBUG

@@ -6,70 +6,66 @@
 <!-- scan 当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。 -->
 <!-- scanPeriod 设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒。当scan为true时，此属性生效。默认的时间间隔为1分钟。 -->
 <!-- debug 当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。 -->
-<configuration debug="false" scan="false" scanPeriod="5 minutes">
 
-    <!-- 引入配置文件 -->
-    <property resource="application.yml"/>
-    <property resource="application-${app.env:-dev}.yml"/>
+<!-- Logback configuration. See http://logback.qos.ch/manual/index.html -->
+<configuration scan="true" scanPeriod="10 seconds">
+    <!--<include resource="org/springframework/boot/logging/logback/base.xml"
+        /> -->
 
-    <property name="app.name" value="${app.name:-AlanApp}"/>
-    <property name="app.env" value="${app.env:-dev}"/>
+    <!--定义日志文件的存储地址和前缀名 -->
+    <property name="LOG_HOME" value="logs" />
+    <property name="LOG_PREFIX" value="AlanApp" />
 
-    <!-- 日志记录级别 -->
-    <property name="logback_level" value="${logback.level:-DEBUG}"/>
-    <!-- 是否输出日志到文件 -->
-    <property name="logback_rolling" value="${logback.rolling:-false}"/>
-    <!-- 设置日志输出目录 -->
-    <property name="logback_rolling_path" value="${logback.rolling.path:-/data/logs}"/>
-    <!-- 日志文件最大大小 -->
-    <property name="logback_max_file_size" value="${logback.max_file_size:-10MB}"/>
-    <!-- 格式化输出：%d：表示日期，%thread：表示线程名，%-5level：级别从左显示5个字符宽度，%logger：日志输出者的名字(通常是所在类的全名)，%L：输出代码中的行号，%msg：日志消息，%n：换行符 -->
-    <property name="logback_pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger %L  -| %msg%n"/>
-
-
-    <if condition='p("logback_rolling").equals("true")'>
-        <then>
-            <!-- 滚动记录文件 -->
-            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-                <file>${logback_rolling_path}/${app.name}.log</file>
-                <!-- rollingPolicy：当发生滚动时，决定RollingFileAppender的行为，涉及文件移动和重命名 -->
-                <!-- TimeBasedRollingPolicy：最常用的滚动策略，它根据时间来制定滚动策略 -->
-                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                    <!-- 活动文件的名字会根据fileNamePattern的值，每隔一段时间改变一次 -->
-                    <fileNamePattern>${logback_rolling_path}/${app.name}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-
-                    <!-- 日志文件的保存期限为30天 -->
-                    <maxHistory>30</maxHistory>
-
-                    <timeBasedFileNamingAndTriggeringPolicy  class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                        <!-- maxFileSize:这是活动文件的大小，默认值是10MB -->
-                        <maxFileSize>${logback_max_file_size}</maxFileSize>
-                    </timeBasedFileNamingAndTriggeringPolicy>
-                </rollingPolicy>
-                <encoder>
-                    <pattern>${logback_pattern}</pattern>
-                    <charset>UTF-8</charset>
-                </encoder>
-            </appender>
-
-            <root>
-                <appender-ref ref="FILE"/>
-            </root>
-        </then>
-    </if>
-
-
-    <!-- 将日志打印到控制台 -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- 一般信息按照每天生成日志文件 -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/${LOG_PREFIX}-info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 每天一归档 -->
+            <fileNamePattern>${LOG_HOME}/${LOG_PREFIX}-info-%d{yyyyMMdd}.log.%i
+            </fileNamePattern>
+            <!-- 单个日志文件最多500MB, 30天的日志周期，最大不能超过20GB -->
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
         <encoder>
-            <pattern>${logback_pattern}</pattern>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}-%msg%n</Pattern>
         </encoder>
     </appender>
 
-    <root level="${logback_level}">
-        <appender-ref ref="CONSOLE"/>
+    <!--错误信息按照每天生成日志文件 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <File>${LOG_HOME}/${LOG_PREFIX}-error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 每天一归档 -->
+            <fileNamePattern>${LOG_HOME}/${LOG_PREFIX}-error-%d{yyyyMMdd}.log.%i</fileNamePattern>
+            <!-- 单个日志文件最多500MB, 30天的日志周期，最大不能超过20GB -->
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}-%msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 ：
+            |%blue(%thread)  线程 如 ：DiscoveryClient-CacheRefreshExecutor-0-->
+            <pattern>%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level)  |%green(%logger:%line) |%black(%msg%n)</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 日志输出级别 这样设置不打印日志 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="INFO_FILE" />
+        <appender-ref ref="ERROR_FILE" />
     </root>
-
-    <contextName>${app.name}</contextName>
-
 </configuration>
