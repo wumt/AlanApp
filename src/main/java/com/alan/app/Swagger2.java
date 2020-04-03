@@ -30,13 +30,13 @@ public class Swagger2 {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("Spring Boot 测试使用 Swagger2 构建RESTful API")
+                .title("WMT的Swagger2构建RESTful API")
                 //创建人
-                .contact(new Contact("MarryFeng", "http://www.baidu.com", ""))
+                .contact(new Contact("Alan", "http://www.baidu.com", "wumt1991@gmail.com"))
                 //版本号
-                .version("1.0")
+                .version("0.0.1")
                 //描述
-                .description("API 描述")
+                .description("API 描述：从0搭建一个后台管理系统")
                 .build();
     }
  
